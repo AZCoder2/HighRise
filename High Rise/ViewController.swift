@@ -83,6 +83,35 @@ class ViewController: UIViewController {
     return true
   }
   
+  // MARK: - IB Actions
+  
+    @IBAction func handleTap(_ sender: UITapGestureRecognizer) {
+        
+        if let currentBoxNode = scnScene.rootNode.childNode(
+            withName: "Block\(height)", recursively: false) {
+            
+            currentPosition = currentBoxNode.presentation.position
+            let boundsMin = currentBoxNode.boundingBox.min
+            let boundsMax = currentBoxNode.boundingBox.max
+            currentSize = boundsMax - boundsMin
+            
+            offset = previousPosition - currentPosition
+            absoluteOffset = offset.absoluteValue()
+            newSize = currentSize - absoluteOffset
+            
+            currentBoxNode.geometry = SCNBox(width: CGFloat(newSize.x), height: 0.2,
+                                             length: CGFloat(newSize.z), chamferRadius: 0)
+            
+            currentBoxNode.position = SCNVector3Make(currentPosition.x + (offset.x/2),
+                                                     currentPosition.y, currentPosition.z + (offset.z/2))
+            
+            currentBoxNode.physicsBody = SCNPhysicsBody(type: .static, 
+                                                        shape: SCNPhysicsShape(geometry: currentBoxNode.geometry!, options: nil))
+        }
+        
+    }
+  
+  
 }
 
 // Make view controller the scene renderer delegate
