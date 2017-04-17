@@ -25,21 +25,58 @@ import SceneKit
 import SpriteKit
 
 class ViewController: UIViewController {
+  
+  // MARK: - Properties
+  
+  // Block variables
+  var direction = true    // Blocks position increasing or decreasing
+  var height = 0          // Tracks position
+  
+  // Layer variables
+  var previousSize = SCNVector3(1, 0.2, 1)
+  var previousPosition = SCNVector3(0, 0.1, 0)
+  var currentSize = SCNVector3(1, 0.2, 1)
+  var currentPosition = SCNVector3Zero
+  
+  // For calculating size of new layer
+  var offset = SCNVector3Zero
+  var absoluteOffset = SCNVector3Zero
+  var newSize = SCNVector3Zero
+  
+  // For tracking number of player perfect matches
+  var perfectMatches = 0
+  
+  // Scene variable
+  var scnScene: SCNScene!
+  
+  // MARK: - Outlets
+  
+  @IBOutlet weak var scnView: SCNView!
+  @IBOutlet weak var scoreLabel: UILabel!
+  
+  // MARKL - Overrides
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
     
-    @IBOutlet weak var scnView: SCNView!
-    @IBOutlet weak var scoreLabel: UILabel!
+    scnScene = SCNScene(named: "HighRise.scnassets/Scenes/GameScene.scn")
+    scnView.scene = scnScene
     
-    var scnScene: SCNScene!
+    // Create a box
+    let blockNode = SCNNode(geometry: SCNBox(width: 1, height: 0.2, length: 1, chamferRadius: 0))
+    blockNode.position.z = -1.25
+    blockNode.position.y = 0.1
+    blockNode.name = "Block\(height)"
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        scnScene = SCNScene(named: "HighRise.scnassets/Scenes/GameScene.scn")
-        scnView.scene = scnScene
-    }
+    // Set block's color based on height & add it to the scene
+    blockNode.geometry?.firstMaterial?.diffuse.contents =
+      UIColor(colorLiteralRed: 0.01 * Float(height), green: 0, blue: 1, alpha: 1)
     
-    override var prefersStatusBarHidden: Bool {
-        return true
-    }
-    
+    scnScene.rootNode.addChildNode(blockNode)
+  }
+  
+  override var prefersStatusBarHidden: Bool {
+    return true
+  }
+  
 }
