@@ -54,7 +54,7 @@ class ViewController: UIViewController {
   @IBOutlet weak var scnView: SCNView!
   @IBOutlet weak var scoreLabel: UILabel!
   
-  // MARKL - Overrides
+  // MARK: - Overrides
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -73,10 +73,63 @@ class ViewController: UIViewController {
       UIColor(colorLiteralRed: 0.01 * Float(height), green: 0, blue: 1, alpha: 1)
     
     scnScene.rootNode.addChildNode(blockNode)
+    
+    // Get blocks moving
+    scnView.isPlaying = true
+    scnView.delegate = self
   }
   
   override var prefersStatusBarHidden: Bool {
     return true
   }
   
+}
+
+// Make view controller the scene renderer delegate
+
+extension ViewController: SCNSceneRendererDelegate {
+  func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
+    
+    // Look for the block created earlier (by name)
+    if let currentNode = scnScene.rootNode.childNode(withName: "Block\(height)", recursively: false) {
+      
+      // Blocks on even layers move on the z-axis
+      if height % 2 == 0 {
+        
+        // Direction detection & change (z-axis)
+        if currentNode.position.z >= 1.25 {
+          direction = false
+        } else if currentNode.position.z <= -1.25 {
+          direction = true
+        }
+        
+        // Move box on z-axis
+        switch direction {
+        case true:
+          currentNode.position.z += 0.03
+        case false:
+          currentNode.position.z -= 0.03
+        }
+        
+        // Blocks on the odd layers move on the x-axis
+      } else {
+        
+        // Direction detection & change (x-axis)
+        if currentNode.position.x >= 1.25 {
+          direction = false
+        } else if currentNode.position.x <= -1.25 {
+          direction = true
+        }
+        
+        // Move on x-axis
+        switch direction {
+        case true:
+          currentNode.position.x += 0.03
+        case false:
+          currentNode.position.x -= 0.03
+        }
+      }
+    }
+    
+  }
 }
