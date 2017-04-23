@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16D32" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12120" systemVersion="16D32" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12086"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -28,23 +29,38 @@
                                 </connections>
                             </sceneKitView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pxT-Pm-fUT">
-                                <rect key="frame" x="171.5" y="50" width="33" height="65.5"/>
+                                <rect key="frame" x="171" y="50" width="33" height="66"/>
                                 <fontDescription key="fontDescription" name="Thonburi" family="Thonburi" pointSize="50"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6pt-zc-eUC">
+                                <rect key="frame" x="107" y="478" width="161" height="89"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="66"/>
+                                <state key="normal" title="Play">
+                                    <color key="titleColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="playGame:" destination="BYZ-38-t0r" eventType="touchUpInside" id="byv-FQ-kN9"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="6pt-zc-eUC" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="91" id="4UJ-ZX-ODw"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="6pt-zc-eUC" secondAttribute="bottom" constant="100" id="7MV-lE-b8n"/>
                             <constraint firstItem="sDw-b1-Hlt" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="G6n-it-nax"/>
                             <constraint firstItem="sDw-b1-Hlt" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="LGU-Fn-vWX"/>
                             <constraint firstItem="pxT-Pm-fUT" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="MfR-eT-ij5"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="sDw-b1-Hlt" secondAttribute="bottom" id="RcN-KW-LJT"/>
+                            <constraint firstItem="6pt-zc-eUC" firstAttribute="centerX" secondItem="pxT-Pm-fUT" secondAttribute="centerX" id="eH7-AL-UN4"/>
                             <constraint firstAttribute="trailing" secondItem="sDw-b1-Hlt" secondAttribute="trailing" id="nMF-33-MFf"/>
                             <constraint firstItem="pxT-Pm-fUT" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="30" id="vcT-DI-KHP"/>
+                            <constraint firstItem="sDw-b1-Hlt" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="xud-Sh-1K7"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="playButton" destination="6pt-zc-eUC" id="5VW-Jw-OZR"/>
                         <outlet property="scnView" destination="sDw-b1-Hlt" id="zN4-dc-Dac"/>
                         <outlet property="scoreLabel" destination="pxT-Pm-fUT" id="Wri-jH-d2A"/>
                     </connections>

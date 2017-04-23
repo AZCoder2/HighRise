@@ -49,10 +49,14 @@ class ViewController: UIViewController {
   // Scene variable
   var scnScene: SCNScene!
   
+  // For sound
+  var sounds = [String: SCNAudioSource]()
+  
   // MARK: - Outlets
   
   @IBOutlet weak var scnView: SCNView!
   @IBOutlet weak var scoreLabel: UILabel!
+  @IBOutlet weak var playButton: UIButton!
   
   // MARK: - Overrides
   
@@ -62,21 +66,43 @@ class ViewController: UIViewController {
     scnScene = SCNScene(named: "HighRise.scnassets/Scenes/GameScene.scn")
     scnView.scene = scnScene
     
-    // Create a box
-    let blockNode = SCNNode(geometry: SCNBox(width: 1, height: 0.2, length: 1, chamferRadius: 0))
-    blockNode.position.z = -1.25
-    blockNode.position.y = 0.1
-    blockNode.name = "Block\(height)"
+    // Load sounds
+    loadSound(name: "GameOver", path: "HighRise.scnassets/Audio/GameOver.wav")
+    loadSound(name: "PerfectFit", path: "HighRise.scnassets/Audio/PerfectFit.wav")
+    loadSound(name: "SliceBlock", path: "HighRise.scnassets/Audio/SliceBlock.wav")
     
-    // Set block's color based on height & add it to the scene
-    blockNode.geometry?.firstMaterial?.diffuse.contents =
-      UIColor(colorLiteralRed: 0.01 * Float(height), green: 0, blue: 1, alpha: 1)
-    
-    scnScene.rootNode.addChildNode(blockNode)
+    //         Create a box
+    //        let blockNode = SCNNode(geometry: SCNBox(width: 1, height: 0.2, length: 1, chamferRadius: 0))
+    //        blockNode.position.z = -1.25
+    //        blockNode.position.y = 0.1
+    //        blockNode.name = "Block\(height)"
+    //
+    //        // Set block's color based on height & add it to the scene
+    //        blockNode.geometry?.firstMaterial?.diffuse.contents =
+    //            UIColor(colorLiteralRed: 0.01 * Float(height), green: 0, blue: 1, alpha: 1)
+    //
+    //        scnScene.rootNode.addChildNode(blockNode)
     
     // Get blocks moving
     scnView.isPlaying = true
     scnView.delegate = self
+  }
+  
+  // Load sound
+  func loadSound(name: String, path: String) {
+    if let sound = SCNAudioSource(fileNamed: path) {
+      sound.isPositional = false
+      sound.volume = 1
+      sound.load()
+      sounds[name] = sound
+    } else {
+      print("Sound did not load")
+    }
+  }
+  
+  // Play sound
+  func playSound(sound: String, node: SCNNode) {
+    node.runAction(SCNAction.playAudio(sounds[sound]!, waitForCompletion: false))
   }
   
   override var prefersStatusBarHidden: Bool {
@@ -112,6 +138,8 @@ class ViewController: UIViewController {
                                                   shape: SCNPhysicsShape(geometry: currentBoxNode.geometry!, options: nil))
       
       addNewBlock(currentBoxNode)
+      playSound(sound: "SliceBlock", node: currentBoxNode)
+      
       addBrokenBlock(currentBoxNode)
       
       // If tower height is greater than or equal to 5, move camera up
@@ -129,8 +157,62 @@ class ViewController: UIViewController {
       previousSize = SCNVector3Make(newSize.x, 0.2, newSize.z)
       previousPosition = currentBoxNode.position
       height += 1
+      
+      // Missed?
+      if height % 2 == 0 && newSize.z <= 0 {
+        height += 1
+        currentBoxNode.physicsBody = SCNPhysicsBody(type: .dynamic,
+                                                    shape: SCNPhysicsShape(geometry: currentBoxNode.geometry!, options: nil))
+        playSound(sound: "GameOver", node: currentBoxNode)
+        gameOver()
+        return
+        
+      } else if height % 2 != 0 && newSize.x <= 0 {
+        height += 1
+        currentBoxNode.physicsBody = SCNPhysicsBody(type: .dynamic,
+                                                    shape: SCNPhysicsShape(geometry: currentBoxNode.geometry!, options: nil))
+        
+        playSound(sound: "GameOver", node: currentBoxNode)
+        gameOver()
+        return
+      }
+      
+      // Perfect match processing
+      checkPerfectMatch(currentBoxNode)
     }
   }
+  
+  @IBAction func playGame(_ sender: UIButton) {
+    
+    playButton.isHidden = true
+    
+    let gameScene = SCNScene(named: "HighRise.scnassets/Scenes/GameScene.scn")!
+    let transition = SKTransition.fade(withDuration: 1.0)
+    scnScene = gameScene
+    let mainCamera = scnScene.rootNode.childNode(withName: "Main Camera", recursively: false)!
+    scnView.present(scnScene, with: transition, incomingPointOfView: mainCamera, completionHandler: nil)
+    
+    height = 0
+    scoreLabel.text = "\(height)"
+    
+    direction = true
+    perfectMatches = 0
+    
+    previousSize = SCNVector3(1, 0.2, 1)
+    previousPosition = SCNVector3(0, 0.1, 0)
+    
+    currentSize = SCNVector3(1, 0.2, 1)
+    currentPosition = SCNVector3Zero
+    
+    let boxNode = SCNNode(geometry: SCNBox(width: 1, height: 0.2, length: 1, chamferRadius: 0))
+    boxNode.position.z = -1.25
+    boxNode.position.y = 0.1
+    boxNode.name = "Block\(height)"
+    boxNode.geometry?.firstMaterial?.diffuse.contents = UIColor(colorLiteralRed: 0.01 * Float(height),
+                                                                green: 0, blue: 1, alpha: 1)
+    scnScene.rootNode.addChildNode(boxNode)
+  }
+  
   
   
   // Method to next block in tower
@@ -208,6 +290,60 @@ class ViewController: UIViewController {
     }
   }
   
+  func checkPerfectMatch(_ currentBoxNode: SCNNode) {
+    
+    if height % 2 == 0 && absoluteOffset.z <= 0.03 {
+      currentBoxNode.position.z = previousPosition.z
+      currentPosition.z = previousPosition.z
+      perfectMatches += 1
+      if perfectMatches >= 7 && currentSize.z < 1 {
+        newSize.z += 0.05
+      }
+      
+      offset = previousPosition - currentPosition
+      absoluteOffset = offset.absoluteValue()
+      newSize = currentSize - absoluteOffset
+      
+      playSound(sound: "PerfectFit", node: currentBoxNode)
+      
+    } else if height % 2 != 0 && absoluteOffset.x <= 0.03 {
+      currentBoxNode.position.x = previousPosition.x
+      currentPosition.x = previousPosition.x
+      perfectMatches += 1
+      if perfectMatches >= 7 && currentSize.x < 1 {
+        newSize.x += 0.05
+      }
+      
+      offset = previousPosition - currentPosition
+      absoluteOffset = offset.absoluteValue()
+      newSize = currentSize - absoluteOffset
+      
+      playSound(sound: "PerfectFit", node: currentBoxNode)
+      
+    } else {
+      perfectMatches = 0
+    }
+  }
+  
+  func gameOver() {
+    let mainCamera = scnScene.rootNode.childNode(
+      withName: "Main Camera", recursively: false)!
+    
+    let fullAction = SCNAction.customAction(duration: 0.3) { _,_ in
+      let moveAction = SCNAction.move(to: SCNVector3Make(mainCamera.position.x,
+                                                         mainCamera.position.y * (3/4), mainCamera.position.z), duration: 0.3)
+      mainCamera.runAction(moveAction)
+      if self.height <= 15 {
+        mainCamera.camera?.orthographicScale = 1
+      } else {
+        mainCamera.camera?.orthographicScale = Double(Float(self.height/2) /
+          mainCamera.position.y)
+      }
+    }
+    
+    mainCamera.runAction(fullAction)
+    playButton.isHidden = false
+  }
 }
 
 
